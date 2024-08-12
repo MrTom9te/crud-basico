@@ -34,26 +34,36 @@ async fn create_user(
 ) -> impl Responder {
     let hashed = hash(&user.password, DEFAULT_COST).expect("Erro hashed");
 
-    if !(user.email != "") {
-        return HttpResponse::BadRequest()
-            .json(serde_json::json!({"message": "Email is required"}));
-    }
-    if !(user.name != "") {
-        return HttpResponse::BadRequest().json(serde_json::json!({"message": "Name is required"}));
-    }
-    if !(user.password != "") {
-        return HttpResponse::BadRequest()
-            .json(serde_json::json!({"message": "Password is required"}));
+    let missing_fields = [
+        ("name", &user.name),
+        ("email", &user.email),
+        ("password", &user.password),
+    ]
+    .iter()
+    .filter(|(_, value)| value.is_empty())
+    .map(|(field, _)| *field)
+    .collect::<Vec<&str>>();
+
+    if !missing_fields.is_empty() {
+        return HttpResponse::BadRequest().json(serde_json::json!(
+            {
+                "message":"Missing required fields",
+                "Fields":missing_fields
+            }
+        ));
     }
 
-    if !(hashed != user.password) {
-        return HttpResponse::InternalServerError().body("Error hashing password");
-    }
-    let result = sqlx::query!("INSERT INTO users (name, email, password ) VALUES ($1,$2,$3) RETURNING * ",user.name,user.email,hashed).fetch_one(&app_state.postgres_client).await;
+    let result = sqlx::query!(
+        "INSERT INTO users (name, email, password ) VALUES ($1,$2,$3) RETURNING * ",
+        user.name,
+        user.email,
+        hashed
+    )
+    .fetch_one(&app_state.postgres_client)
+    .await;
 
     match result {
         Ok(user) => HttpResponse::Ok().json(RegisterUser {
-            
             name: user.name,
             email: user.email,
             password: user.password,
@@ -64,5 +74,4 @@ async fn create_user(
 
 pub fn user_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(get_all_users).service(create_user);
-    
 }
