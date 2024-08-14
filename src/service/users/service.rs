@@ -134,5 +134,6 @@ async fn delete_user(app_state: web::Data<AppState>, id: web::Path<i32>) -> impl
 pub fn user_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(get_all_users)
         .service(create_user)
-        .service(update_users);
+        .service(update_users)
+        .service(delete_user);
 }
