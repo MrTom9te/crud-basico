@@ -30,8 +30,7 @@ async fn get_all_users(app_state: web::Data<AppState>) -> impl Responder {
     }
 }
 
-#[put("/users/{i32}")]
-///Atualiza um user
+#[put("/users/{i32}")] //Atualiza um user
 async fn update_users(
     app_state: web::Data<AppState>,
     user: web::Json<UpdateUser>,
@@ -61,8 +60,7 @@ async fn update_users(
     }
 }
 
-#[post("/users")]
-/// Criação de usuario no Banco de Dados
+#[post("/users")] // Criação de usuario no Banco de Dados
 async fn create_user(
     app_state: web::Data<AppState>,
     user: web::Json<RegisterUser>,
@@ -108,6 +106,28 @@ async fn create_user(
             id: result_query.id,
         }),
         Err(_) => HttpResponse::InternalServerError().body("Error Trying to create user."),
+    }
+}
+#[delete("/users/{id}")]
+async fn delete_user(app_state: web::Data<AppState>, id: web::Path<i32>) -> impl Responder {
+    let result = sqlx::query!(
+        "DELETE FROM users WHERE id = $1 RETURNING id, name , email, password",
+        id.into_inner()
+    )
+    .fetch_one(&app_state.postgres_client)
+    .await;
+
+    match result {
+        Ok(result_query) => HttpResponse::Ok().json(Allusers {
+            id: result_query.id,
+            name: result_query.name,
+            email: result_query.email,
+            password: result_query.password,
+        }),
+        Err(e) => {
+            println!("User not found : {} ", e);
+            HttpResponse::InternalServerError().body("Erro trying to delete user")
+        }
     }
 }
 

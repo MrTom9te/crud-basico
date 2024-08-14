@@ -1,8 +1,6 @@
-use std::clone;
-
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use dotenv::dotenv;
-use sqlx::{pool, Pool, Postgres};
+use sqlx::{Pool, Postgres};
 
 mod service {
     pub mod users;
