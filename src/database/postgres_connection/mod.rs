@@ -1,6 +1,6 @@
 use std::env::var;
 
-use sqlx::{postgres::PgPoolOptions, PgPool, Pool, Postgres};
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
 pub async fn start_connection() -> Pool<Postgres> {
     let postgres_environment = var("DATABASE_URL").expect("DATABASE must be set ");

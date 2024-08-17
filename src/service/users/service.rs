@@ -1,9 +1,9 @@
 use super::models::{Allusers, RegisterUser, UpdateUser};
 use crate::AppState;
 use actix_web::*;
-use bcrypt::{hash, verify, DEFAULT_COST};
+use bcrypt::{hash, DEFAULT_COST};
 
-#[get("/users")]
+#[get("/users")] //Lista TODOS os usuarios
 async fn get_all_users(app_state: web::Data<AppState>) -> impl Responder {
     let result = sqlx::query!("SELECT * FROM users")
         .fetch_all(&app_state.postgres_client)
